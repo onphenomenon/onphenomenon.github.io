@@ -1,0 +1,291 @@
+<html>
+
+<head>
+    <title>Data Viz Tool Consumer Behaviors</title>
+    <meta charset="utf-8" />
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js"></script>
+    <!--<script type='text/javascript' src="./tip.js"></script>-->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+</head>
+<style>
+    svg {
+        border: 1px solid gray;
+    }
+    select {
+        width: 250px;
+    }
+
+    .axis text {
+        font: 10px sans-serif;
+    }
+
+    .axis path .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+    .bold-selected {
+        font-weight: bold;
+    }
+    th.item {
+        width: 650px;
+    } 
+    tr {
+        height: 40px;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="header clearfix">
+            <nav>
+                <ul class="nav nav-pills pull-right">
+                    <li role="presentation" class="active"><a href="#">Home</a></li>
+                    <li role="presentation"><a href="#">About</a></li>
+                    <li role="presentation"><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+            <h3 class="text-muted">Vizualizing Types</h3>
+        </div>
+        <div class="row">
+            <div class="col-lg-3">
+                <h3>BASE SELECTION</h3>
+                <select class="selectpicker">
+                     <option selected="selected">----- select attitude item ------</option> 
+                </select>
+            </div>
+            <div class="col-lg-9">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Attitude Item</th>
+                            <th>Color</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="selection-1">
+                            <th class="item" scope="row"></th>
+                            <td></td>
+                        </tr>
+                        <tr class="selection-2">
+                            <th class="item" scope="row"></th>
+                            <td></td>
+                        </tr>
+                        <tr class="selection-3">
+                            <th class="item" scope="row"></th>
+                            <td colspan="2"></td>
+                        </tr>
+                        <tr class="selection-4">
+                            <th class="item" scope="row"></th>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="jumbotron">
+            <h3>Consumer Behaviors</h3>
+
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+
+            </div>
+            <div class="col-lg-6">
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; Karianne Burns</p>
+        </footer>
+
+    </div>
+    <!-- /container -->
+</body>
+<footer>
+    <script>
+        var newZValues = [];
+        var keyOfSelection = [];
+
+        function rowParser(row) {
+            var zValues = [];
+            keyOfSelection.push(row.trait.trim());
+            zValues.push(
+                row["market energy"],
+                row["established"],
+                row["gender"],
+                row["scope of interest"],
+                row["affiliation preference"],
+                row["consumer value"],
+                row["interpersonal style"],
+                row["societal position"])
+            newZValues.push(zValues)
+        }
+
+        d3.csv("./baseMRI.csv", rowParser, function (rows) {
+            var select = $("select");
+            $.each(keyOfSelection, function (index, item) {
+
+                select.append($("<option />").val(index).text(item));
+            });
+        });
+
+        var margin = { top: 20, right: 10, bottom: 20, left: 10 };
+        outerWidth = 1000,
+            outerHeight = 960,
+            innerWidth = outerWidth - margin.left - margin.right,
+            innerHeight = outerHeight - margin.top - margin.bottom;
+        var yOrdinal = [
+            "Dynamism",
+            "Established",
+            "Gender",
+            "Scope of Interest",
+            "Belonging vs. Individualistic",
+            "Image Conscious vs. Function",
+            "Interpersonal: Approach vs. Avoid",
+            "Societal: Mainstream vs. Edge"
+        ]
+        var colors = ["#66CCCC",
+            "#FFFF99", "#CC9999",
+            "#666633", "#993300",
+            "#ff9966", "#339999",
+            "#6699cc", "#ffcc66",
+            "#ff6600", "#00ccccc"]
+
+
+        var svg = d3.select("div.jumbotron").append("svg")
+            .attr("width", outerWidth)
+            .attr("height", outerHeight)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var xScale = d3.scaleLinear().domain([-1, 1]).range([0, innerWidth]);
+
+        var yScaleCategories = d3.scaleBand().domain(yOrdinal).rangeRound([0, innerHeight]);
+        var yScaleNumber = d3.scaleBand().domain(d3.range(8)).rangeRound([0, innerHeight]);
+        var yCategoryBandwidth = yScaleCategories.bandwidth();
+        var zColorScale = d3.scaleOrdinal().range(["#77C904", "#57BC90", "#328CC1", "#77C9D4"]);
+
+        var yAxisLeft = d3.axisRight(yScaleCategories).tickSize(innerWidth);
+        function customYAxis(g) {
+            g.call(yAxisLeft);
+            g.select(".domain").remove();
+            g.selectAll(".tick line").remove();
+            g.selectAll(".tick line").attr("stroke", "#777").attr("stroke-dasharray", "2,2");
+            g.selectAll(".tick text").attr("x", 4).attr("dy", 16)
+            .attr("font-size", 16);
+        }
+        var yAxisCenter = d3.axisLeft(yScaleCategories);
+        var xAxisBottom = d3.axisBottom(xScale).tickSize(5)
+
+        //X AXIS
+        svg.append("g")
+            .attr("class", "x axis")
+            // .attr("transform", "translate(0,20)")
+            .attr("transform", "translate(0," + innerHeight + ")")
+            .call(xAxisBottom);
+
+        //Y AXIS LEFT
+        svg.append("g")
+            .attr("class", "y left")
+            .attr("transform", "translate(10,0)")
+            .call(customYAxis);
+        
+        var g = svg.append('g');
+
+        var dropdownSelection = [];
+        var currentZArrayChoices = [];
+        $(document).ready(function () {
+            $("select")
+                .change(function () {
+                    $("select option:selected").addClass("bold-selected");
+                    var str = "";
+                    $("select option:selected").each(function () {
+                        str += $(this).text() + " ";
+                    });
+                    $(".selected-item").text(str);
+                    currentZArrayChoices.push(newZValues[parseInt($(this)[0].value)])
+                    if (dropdownSelection.length === 4) {
+                        dropdownSelection.shift();
+                        currentZArrayChoices.shift();
+                    }
+                    dropdownSelection.push({
+                        id: parseInt($(this)[0].value),
+                        attribute: str
+                    });
+                    $(".selection-1 th").text(dropdownSelection[0].attribute);
+                    $(".selection-1 td").css("background-color","#77C904");
+                    if (dropdownSelection[1] !== undefined) {
+                        $(".selection-2 th").text(dropdownSelection[1].attribute);
+                        $(".selection-2 td").css("background-color","#57BC90");
+                    } 
+                    if (dropdownSelection[2] !== undefined) {
+                        $(".selection-3 th").text(dropdownSelection[2].attribute);
+                        $(".selection-3 td").css("background-color","#328CC1");
+                    }
+                    if (dropdownSelection[3] !== undefined) {
+                        $(".selection-4 th").text(dropdownSelection[3].attribute);
+                        $(".selection-4 td").css("background-color","#77C9D4");
+                    }
+
+                    selectAttitudeItems(currentZArrayChoices)
+                })
+
+
+        });
+
+        function selectAttitudeItems(newData) {
+            var yScaleGroup = d3.scaleBand().domain(d3.range(newData.length)).rangeRound([0, yCategoryBandwidth]).padding(0.05);
+            //this is not resizing:
+            var yGroupBandwidth = yScaleGroup.bandwidth();
+   
+            var group =  g.selectAll("g")
+                .data(newData)
+             group.attr("class", "update")
+             .attr("transform", function (d, i) { 
+                console.log("update YSCALE GROUP: ", yScaleGroup(i))
+                return "translate(0, " + yScaleGroup(i) + ")";
+             })
+             group.selectAll("rect").attr("height", yGroupBandwidth)
+
+            group.enter().append("g")
+                .attr("class", "enter")
+                .style("fill", function (d, i) { 
+                    return zColorScale(i); })
+                .attr("transform", function (d, i) { 
+                    return "translate(0, " + yScaleGroup(i) + ")"; })
+                .selectAll("rect")
+                .data(function (d) { return d; })
+                .enter().append("rect")
+                .attr("width", function (d, i) { 
+                    return Math.abs(xScale(d) - xScale(0)); })
+                .attr("height", function (d, i) { 
+                    return yGroupBandwidth
+                 })
+                .attr("x", function (d) {
+                    return xScale(Math.min(0, d))
+                })
+                .attr("y", function (d, i) {
+                    return yScaleNumber(i);
+                })
+                .merge(group)
+
+                group.exit().remove();
+
+            //Y AXIS CENTER
+            svg.append("g")
+                .attr("class", "y center")
+                .attr("transform", "translate(" + xScale(0) + ",0)")
+                .call(yAxisCenter);
+        }
+    </script>
+</footer>
+
+</html>
