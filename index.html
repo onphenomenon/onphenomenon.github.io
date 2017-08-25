@@ -15,8 +15,9 @@
 </head>
 <style>
     svg {
-        border: 1px solid gray;
+        /* border-top: 1px solid gray; */
     }
+
     select {
         width: 250px;
     }
@@ -30,12 +31,15 @@
         stroke: #000;
         shape-rendering: crispEdges;
     }
+
     .bold-selected {
         font-weight: bold;
     }
+
     th.item {
         width: 650px;
-    } 
+    }
+
     tr {
         height: 40px;
     }
@@ -66,24 +70,45 @@
                         <tr>
                             <th>Attitude Item</th>
                             <th>Color</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <tr class="selection-0">
+                            <th class="item" scope="row"></th>
+                            <td class="color"></td>
+                            <td>
+                                <button class="delete" type="button" value="0" class="btn btn-default" aria-haspopup="true" aria-expanded="false">
+                                     <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                                 </button>
+                            </td>
+                        </tr>
                         <tr class="selection-1">
                             <th class="item" scope="row"></th>
-                            <td></td>
+                            <td class="color"></td>
+                            <td>
+                                <button class="delete" type="button" value="1" class="btn btn-default" aria-haspopup="true" aria-expanded="false">
+                                     <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                                 </button>
+                            </td>
                         </tr>
                         <tr class="selection-2">
                             <th class="item" scope="row"></th>
-                            <td></td>
+                            <td class="color"></td>
+                            <td>
+                                <button class="delete" type="button" value="2" class="btn btn-default" aria-haspopup="true" aria-expanded="false">
+                                     <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                                 </button>
+                            </td>
                         </tr>
                         <tr class="selection-3">
                             <th class="item" scope="row"></th>
-                            <td colspan="2"></td>
-                        </tr>
-                        <tr class="selection-4">
-                            <th class="item" scope="row"></th>
-                            <td colspan="2"></td>
+                            <td class="color"></td>
+                            <td>
+                                <button class="delete" type="button" value="3" class="btn btn-default" aria-haspopup="true" aria-expanded="false">
+                                     <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                                 </button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -135,6 +160,7 @@
 
                 select.append($("<option />").val(index).text(item));
             });
+
         });
 
         var margin = { top: 20, right: 10, bottom: 20, left: 10 };
@@ -142,22 +168,27 @@
             outerHeight = 960,
             innerWidth = outerWidth - margin.left - margin.right,
             innerHeight = outerHeight - margin.top - margin.bottom;
-        var yOrdinal = [
-            "Dynamism",
+        var yOrdinalLeft = [
+            "High Market Dynamism",
             "Established",
-            "Gender",
-            "Scope of Interest",
-            "Belonging vs. Individualistic",
-            "Image Conscious vs. Function",
-            "Interpersonal: Approach vs. Avoid",
-            "Societal: Mainstream vs. Edge"
+            "Cultural Gender: Feminine",
+            "Broader Scope of Interest",
+            "Adherence: Group Belonging",
+            "Consumer Value: Image Conscious",
+            "Interpersonal Style: Approach",
+            "Societal Position: Center"
         ]
-        var colors = ["#66CCCC",
-            "#FFFF99", "#CC9999",
-            "#666633", "#993300",
-            "#ff9966", "#339999",
-            "#6699cc", "#ffcc66",
-            "#ff6600", "#00ccccc"]
+        var yOrdinalRight = [
+            "Low Market Dynamism",
+            "Unestablished",
+            "Cultural Gender: Macho",
+            "Narrow Scope of Interest",
+            "Adherence: Self-Directed",
+            "Consumer Value: Function-Oriented",
+            "Interpersonal Style: Avoidant",
+            "Societal Position: Edge"
+        ]
+        var colors = ["#77C904", "#57BC90", "#328CC1", "#77C9D4"]
 
 
         var svg = d3.select("div.jumbotron").append("svg")
@@ -168,36 +199,63 @@
 
         var xScale = d3.scaleLinear().domain([-1, 1]).range([0, innerWidth]);
 
-        var yScaleCategories = d3.scaleBand().domain(yOrdinal).rangeRound([0, innerHeight]);
+        var yScaleCategoriesLeft = d3.scaleBand().domain(yOrdinalLeft).rangeRound([0, innerHeight]);
+        var yScaleCategoriesRight = d3.scaleBand().domain(yOrdinalRight).rangeRound([0, innerHeight]);
         var yScaleNumber = d3.scaleBand().domain(d3.range(8)).rangeRound([0, innerHeight]);
-        var yCategoryBandwidth = yScaleCategories.bandwidth();
-        var zColorScale = d3.scaleOrdinal().range(["#77C904", "#57BC90", "#328CC1", "#77C9D4"]);
+        var yCategoryBandwidth = yScaleCategoriesLeft.bandwidth();
+        var zColorScale = d3.scaleOrdinal().range(colors);
 
-        var yAxisLeft = d3.axisRight(yScaleCategories).tickSize(innerWidth);
-        function customYAxis(g) {
+
+        var yAxisLeft = d3.axisRight(yScaleCategoriesLeft).tickSize(innerWidth);
+        var yAxisCenter = d3.axisLeft(yScaleCategoriesLeft);
+        var yAxisRight = d3.axisRight(yScaleCategoriesRight).tickSize(innerWidth);
+        var xAxisBottom = d3.axisBottom(xScale).tickSize(5)
+
+        function customYAxisLeft(g) {
             g.call(yAxisLeft);
             g.select(".domain").remove();
             g.selectAll(".tick line").remove();
-            g.selectAll(".tick line").attr("stroke", "#777").attr("stroke-dasharray", "2,2");
-            g.selectAll(".tick text").attr("x", 4).attr("dy", 16)
-            .attr("font-size", 16);
+            g.selectAll(".tick text").attr("x", 4)
+                .attr("font-size", 12);
         }
-        var yAxisCenter = d3.axisLeft(yScaleCategories);
-        var xAxisBottom = d3.axisBottom(xScale).tickSize(5)
+
+        function customYAxisCenter(g) {
+            g.call(yAxisCenter)
+            g.select("path").attr("stroke-width", 2)
+            g.selectAll(".tick").remove();
+        }
+
+        function customYAxisRight(g) {
+            g.call(yAxisRight)
+            g.select(".domain").remove();
+            g.selectAll(".tick line").remove();
+            g.selectAll(".tick text").attr("x", 4)
+                .attr("font-size", 12);
+        }
+
+        function customXAxisCategories(g) {
+            g.call(xAxisBottom)
+            g.selectAll(".tick").remove();
+        }
 
         //X AXIS
         svg.append("g")
             .attr("class", "x axis")
-            // .attr("transform", "translate(0,20)")
             .attr("transform", "translate(0," + innerHeight + ")")
             .call(xAxisBottom);
 
         //Y AXIS LEFT
         svg.append("g")
             .attr("class", "y left")
-            .attr("transform", "translate(10,0)")
-            .call(customYAxis);
-        
+            .attr("transform", "translate(5,0)")
+            .call(customYAxisLeft);
+
+        //Y AXIS Right
+        svg.append("g")
+            .attr("class", "y right")
+            .attr("transform", "translate(850,0)")
+            .call(customYAxisRight);
+
         var g = svg.append('g');
 
         var dropdownSelection = [];
@@ -205,70 +263,86 @@
         $(document).ready(function () {
             $("select")
                 .change(function () {
-                    $("select option:selected").addClass("bold-selected");
                     var str = "";
                     $("select option:selected").each(function () {
                         str += $(this).text() + " ";
                     });
                     $(".selected-item").text(str);
-                    currentZArrayChoices.push(newZValues[parseInt($(this)[0].value)])
+
                     if (dropdownSelection.length === 4) {
-                        dropdownSelection.shift();
-                        currentZArrayChoices.shift();
+                        dropdownSelection.pop();
+                        currentZArrayChoices.pop();
                     }
+                  
+                    currentZArrayChoices.push(newZValues[parseInt($(this)[0].value)])
                     dropdownSelection.push({
                         id: parseInt($(this)[0].value),
                         attribute: str
                     });
-                    $(".selection-1 th").text(dropdownSelection[0].attribute);
-                    $(".selection-1 td").css("background-color","#77C904");
-                    if (dropdownSelection[1] !== undefined) {
-                        $(".selection-2 th").text(dropdownSelection[1].attribute);
-                        $(".selection-2 td").css("background-color","#57BC90");
-                    } 
-                    if (dropdownSelection[2] !== undefined) {
-                        $(".selection-3 th").text(dropdownSelection[2].attribute);
-                        $(".selection-3 td").css("background-color","#328CC1");
-                    }
-                    if (dropdownSelection[3] !== undefined) {
-                        $(".selection-4 th").text(dropdownSelection[3].attribute);
-                        $(".selection-4 td").css("background-color","#77C9D4");
-                    }
 
+                    dropdownSelection.forEach((item, index) => {
+                        if (dropdownSelection[index] !== undefined) {
+                            $(".selection-" + index + " th").text(dropdownSelection[index].attribute);
+                            $(".selection-" + index + " td.color").css("background-color", colors[index]);
+                        }
+                    });
                     selectAttitudeItems(currentZArrayChoices)
                 })
-
-
+                $("button.delete")
+                    .click(function () {
+                        var itemDelete = $(this)[0].value;
+                        currentZArrayChoices.splice(itemDelete, 1);
+                        dropdownSelection.splice(itemDelete, 1);
+                  
+                        $(".selection-" + itemDelete+ " th").text('');
+                        $(".selection-" + itemDelete + " td.color").css("background-color", '#ffffff');
+            
+                        selectAttitudeItems(currentZArrayChoices)
+                });
+                
         });
 
         function selectAttitudeItems(newData) {
             var yScaleGroup = d3.scaleBand().domain(d3.range(newData.length)).rangeRound([0, yCategoryBandwidth]).padding(0.05);
             //this is not resizing:
             var yGroupBandwidth = yScaleGroup.bandwidth();
-   
-            var group =  g.selectAll("g")
+
+            var group = g.selectAll("g")
                 .data(newData)
-             group.attr("class", "update")
-             .attr("transform", function (d, i) { 
-                console.log("update YSCALE GROUP: ", yScaleGroup(i))
-                return "translate(0, " + yScaleGroup(i) + ")";
-             })
-             group.selectAll("rect").attr("height", yGroupBandwidth)
+            group.attr("class", "update")
+                .attr("transform", function (d, i) {
+                    return "translate(0, " + yScaleGroup(i) + ")";
+                })
+            group.selectAll("rect")
+                .data(function (d) { return d; })
+                .attr("height", yGroupBandwidth)
+                .attr("width", function (d, i) {
+                    return Math.abs(xScale(d) - xScale(0));
+                })
+                .attr("x", function (d) {
+                    return xScale(Math.min(0, d))
+                })
+                .attr("y", function (d, i) {
+                    return yScaleNumber(i);
+                })
 
             group.enter().append("g")
                 .attr("class", "enter")
-                .style("fill", function (d, i) { 
-                    return zColorScale(i); })
-                .attr("transform", function (d, i) { 
-                    return "translate(0, " + yScaleGroup(i) + ")"; })
+                .style("fill", function (d, i) {
+                    return zColorScale(i);
+                })
+                .attr("transform", function (d, i) {
+                    return "translate(0, " + yScaleGroup(i) + ")";
+                })
                 .selectAll("rect")
                 .data(function (d) { return d; })
                 .enter().append("rect")
-                .attr("width", function (d, i) { 
-                    return Math.abs(xScale(d) - xScale(0)); })
-                .attr("height", function (d, i) { 
+                .attr("width", function (d, i) {
+                    return Math.abs(xScale(d) - xScale(0));
+                })
+                .attr("height", function (d, i) {
                     return yGroupBandwidth
-                 })
+                })
                 .attr("x", function (d) {
                     return xScale(Math.min(0, d))
                 })
@@ -277,13 +351,23 @@
                 })
                 .merge(group)
 
-                group.exit().remove();
+            group.exit().remove();
 
             //Y AXIS CENTER
             svg.append("g")
                 .attr("class", "y center")
                 .attr("transform", "translate(" + xScale(0) + ",0)")
-                .call(yAxisCenter);
+                .call(customYAxisCenter);
+
+            //A axises separating bar groups?
+            //GROUP X AXIS
+            yOrdinalRight.forEach((item, index) => {
+                svg.append("g")
+                    .attr("class", "category 1x axis")
+                    .attr("transform", "translate(0," + yCategoryBandwidth * (index + 1) + ")")
+                    .call(customXAxisCategories);
+            });
+
         }
     </script>
 </footer>
