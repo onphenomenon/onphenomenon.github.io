@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Data Viz Tool Consumer Behaviors</title>
+    <title>VALS Reference Dimensions</title>
     <meta charset="utf-8" />
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js"></script>
@@ -115,7 +115,7 @@
             </div>
         </div>
         <div class="jumbotron">
-            <h3>Consumer Behaviors</h3>
+            <h3>VALS Reference Dimensions</h3>
 
         </div>
 
@@ -273,7 +273,7 @@
                         dropdownSelection.pop();
                         currentZArrayChoices.pop();
                     }
-                  
+
                     currentZArrayChoices.push(newZValues[parseInt($(this)[0].value)])
                     dropdownSelection.push({
                         id: parseInt($(this)[0].value),
@@ -288,18 +288,25 @@
                     });
                     selectAttitudeItems(currentZArrayChoices)
                 })
-                $("button.delete")
-                    .click(function () {
-                        var itemDelete = $(this)[0].value;
-                        currentZArrayChoices.splice(itemDelete, 1);
-                        dropdownSelection.splice(itemDelete, 1);
-                  
-                        $(".selection-" + itemDelete+ " th").text('');
-                        $(".selection-" + itemDelete + " td.color").css("background-color", '#ffffff');
-            
-                        selectAttitudeItems(currentZArrayChoices)
+
+            $("button.delete")
+                .click(function () {
+                    var itemDelete = $(this)[0].value;
+                    currentZArrayChoices.splice(itemDelete, 1);
+                    dropdownSelection.splice(itemDelete, 1);
+
+                    $(".selection-" + dropdownSelection.length + " th").text('');
+                    $(".selection-" + dropdownSelection.length + " td.color").css("background-color", '#ffffff');
+
+                    dropdownSelection.forEach((item, index) => {
+                        if (dropdownSelection[index] !== undefined) {
+                            $(".selection-" + index + " th").text(dropdownSelection[index].attribute);
+                            $(".selection-" + index + " td.color").css("background-color", colors[index]);
+                        }
+                    });
+                    selectAttitudeItems(currentZArrayChoices)
                 });
-                
+
         });
 
         function selectAttitudeItems(newData) {
